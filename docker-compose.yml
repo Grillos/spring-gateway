@@ -1,0 +1,50 @@
+version: '2'
+
+volumes:
+  dados:
+
+networks:
+  cloud:
+    external: true
+  services:
+    external: true
+  dados:
+
+services:
+  db: 
+    image: mongo
+    volumes: 
+      - dados:/var/lib/mongo/data
+    networks: 
+      - dados
+  eureka: 
+    build: ./eureka
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+    volumes: 
+      - ./eureka:/eureka
+    ports: 
+      - 8761:8761
+    networks: 
+      - cloud
+  gateway: 
+    build: ./gateway
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+    volumes: 
+      - ./gateway:/gateway
+    networks: 
+      - cloud
+    depends_on: 
+      - eureka
+  auth: 
+    build: ./mongo
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+    volumes: 
+      - ./mongo:/mongo
+    networks: 
+      - cloud
+    depends_on: 
+      - eureka
+    
